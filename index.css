@@ -1,10 +1,10 @@
 body{
-font-family: Georgia, "Times New Roman", serif;
-  max-width: 480px;          
-  margin: 40px auto;         
-  padding: 0 16px;           
-  background: #eef3f0;
-  color: #1d2b25;
+    font-family: Georgia, "Times New Roman", serif;
+    max-width: 480px;          
+    margin: 40px auto;         
+    padding: 0 16px;           
+    background: #eef3f0;
+    color: #1d2b25;
 }
 
 h1 {

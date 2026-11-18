@@ -181,58 +181,114 @@ const itb28Arr = ['imran','Nurbol','sultan','Maksat','sultan','Samuel','Danil']
 const form = document.getElementById("form");
 const input = document.getElementById("input");
 const list = document.getElementById("list");
+const submitBtn = form.querySelector("button"); // Находим кнопку в форме
 
 let tasks = [];
+let editingId = null; // Здесь будем хранить ID задачи, которую сейчас редактируем
 
+// Добавление или сохранение изменений
 form.addEventListener("submit", event => {
-  event.preventDefault();
-  const title = input.value.trim();
-  if (!title) return;
+    event.preventDefault();
+    const title = input.value.trim();
 
-  tasks.push({ id: Date.now(), title: title, done: false });
-  render();
-  input.value = "";
+    if (!title) return;
+
+    if (editingId !== null) {
+        // Режим редактирования: находим задачу и обновляем заголовок
+        const task = tasks.find(t => t.id === editingId);
+        if (task) {
+            task.title = title;
+        }
+        // Выходим из режима редактирования
+        editingId = null;
+        submitBtn.textContent = "Добавить";
+    } else {
+        // Режим добавления: создаем новую задачу
+        tasks.push({
+            id: Date.now(),
+            title: title,
+            done: false
+        });
+    }
+
+    render();
+    input.value = '';
 });
 
+// Удаление, редактирование и отметка о выполнении
 list.addEventListener("click", event => {
-  const li = event.target.closest("li");
-  if (!li) return; 
+    const li = event.target.closest("li");
+    if (!li) return;
 
-  const id = Number(li.dataset.id);
+    const id = Number(li.dataset.id);
 
-  if (event.target.classList.contains("toggle-input")) {
+    // 1. Клик по кнопке удаления
+    if (event.target.classList.contains("delete")) {
+        tasks = tasks.filter(task => task.id !== id);
+        
+        // Если удалили задачу, которую прямо сейчас редактировали — сбрасываем форму
+        if (editingId === id) {
+            editingId = null;
+            input.value = '';
+            submitBtn.textContent = "Добавить";
+        }
+        render();
+        return;
+    }
+
+    // 2. Клик по кнопке редактирования
+    if (event.target.classList.contains("edit")) {
+        const task = tasks.find(t => t.id === id);
+        if (task) {
+            input.value = task.title; // Вставляем текст задачи в инпут
+            input.focus();            // Ставим курсор в поле ввода
+            editingId = id;           // Запоминаем ID
+            submitBtn.textContent = "Сохранить"; // Меняем текст кнопки
+        }
+        return;
+    }
+
+    // 3. Клик по самой задаче или чекбоксу (переключение статуса)
     const task = tasks.find(task => task.id === id);
     if (task) {
-      task.done = !task.done; 
+        task.done = !task.done;
+        render();
     }
-  }
-  render();
 });
 
+// Отрисовка списка
 function render() {
-  list.innerHTML = "";
+    list.innerHTML = "";
 
-  tasks.forEach(task => {
-    const li = document.createElement("li");
-    li.dataset.id = task.id;
-    if (task.done) li.classList.add("done");
+    tasks.forEach(task => {
+        const li = document.createElement("li");
+        li.dataset.id = task.id;
+        if (task.done) li.classList.add("done");
 
-    const span = document.createElement("span");
-    span.textContent = task.title;
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = task.done;
+        checkbox.className = "toggle";
 
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = task.done;
-    checkbox.className = "toggle-input";
+        const span = document.createElement("span");
+        span.textContent = task.title;
 
-    li.append(checkbox, span);
-    list.append(li);
-  });
+        // Кнопка редактирования
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "✎";
+        editBtn.className = "edit";
+
+        // Кнопка удаления
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "✕";
+        deleteBtn.className = "delete";
+
+        li.append(checkbox, span, editBtn, deleteBtn);
+        list.append(li);
+    });
 }
 
 render();
-
-
 
 
 
